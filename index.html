@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <!-- linking the CSS file where all styling is written -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- importing Font Awesome so we can use cool icons like the trash can -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- main container that holds everything -->
+    <div class="main">
+      <!-- top section: input box + Add button -->
+      <div class="c1">
+        <input type="text" id="input" placeholder="Enter Your Task" />
+        <button id="add">Add</button>
+      </div>
+
+      <!-- bottom section: task list will be shown here -->
+      <div class="c2">
+        <ul id="list"></ul>
+      </div>
+    </div>
+
+    <!-- connecting the JavaScript file for all the logic -->
+    <script src="index.js"></script>
+  </body>
+</html>
