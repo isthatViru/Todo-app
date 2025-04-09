@@ -1,56 +1,124 @@
-// grabbing input box, add button, and the list where tasks will go
-const inputtext = document.getElementById("input");
-const btn = document.getElementById("add");
-const applist = document.getElementById("list");
+// Get references to DOM elements
+const inputtext = document.getElementById("input"); // Input field
+const btn = document.getElementById("add"); // Add/Update button
+const applist = document.getElementById("list"); // Task list container
+const statusMsg = document.getElementById("statusMsg"); // Message text
 
-// when "Add" button is clicked
+let currentEditId = null; // Keeps track of the ID of the task being edited
+
+// ✅ Load all tasks from localStorage when the page loads
+window.onload = () => {
+  const savedTasks = JSON.parse(localStorage.getItem("tasks")) || []; // Get tasks or empty array
+  savedTasks.forEach(addTaskToUI); // Show each task on UI
+};
+
+// ✅ Handle Add or Update button click
 btn.addEventListener("click", () => {
-  const data = inputtext.value.trim(); // take what's typed and remove spaces
+  const text = input.value.trim(); // Get input value and trim spaces
+  if (!text) return; // Don't allow empty tasks
 
-  if (data) {
-    // only do stuff if there's actual input
-    const li = document.createElement("li"); // create a new list item
+  if (currentEditId !== null) {
+    // If editing existing task
+    updateTask(text);
+  } else {
+    // If adding new task
+    const task = {
+      id: Date.now(), // Generate unique ID using timestamp
+      text,
+      completed: false, // Default status
+    };
+    saveTask(task); // Save to localStorage
+    addTaskToUI(task); // Add to screen
+  }
 
-    // setting up how each task looks: text + checkbox + delete button
-    li.innerHTML = `
-      <span>${data}</span>
-      <input type="checkbox" class="complete-checkbox">
-      <button class="delete-btn"><i class="fas fa-trash-alt"></i></button>
-    `;
+  // Reset UI state
+  input.value = "";
+  btn.textContent = "Add";
+  statusMsg.textContent = "";
+  currentEditId = null;
+});
 
-    applist.appendChild(li); // add the new task to the list
-    inputtext.value = ""; // clear input box after adding
+// ✅ Function to add a task to UI
+function addTaskToUI(task) {
+  const li = document.createElement("li");
+  li.setAttribute("data-id", task.id); // Attach ID for future reference
+  li.innerHTML = `
+    <input type="checkbox" ${
+      task.completed ? "checked" : ""
+    } class="complete-checkbox">
+    <span style="${
+      task.completed ? "text-decoration:line-through; color:#888" : ""
+    }">
+      ${task.text}
+    </span>
+    <button class="editBtn">Edit</button>
+    <button class="delete-btn">Delete</button>
+  `;
+  list.appendChild(li);
+}
+
+// ✅ Save task to localStorage
+function saveTask(task) {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || []; // Get existing tasks
+  tasks.push(task); // Add new one
+  localStorage.setItem("tasks", JSON.stringify(tasks)); // Save back
+}
+
+// ✅ Update existing task in localStorage
+function updateTask(text) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.map((t) => (t.id === currentEditId ? { ...t, text } : t)); // Replace matching task
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  refreshList(); // Redraw list
+}
+
+// ✅ Delete a task by ID
+function deleteTask(id) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter((t) => t.id !== id); // Keep all except the one with given id
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  refreshList();
+}
+
+// ✅ Toggle task completion (checkbox)
+function toggleComplete(id, completed) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.map((t) => (t.id === id ? { ...t, completed } : t)); // Update completed value
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  refreshList();
+}
+
+// ✅ Re-render all tasks (after update/delete/complete)
+function refreshList() {
+  list.innerHTML = ""; // Clear UI
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.forEach(addTaskToUI); // Show all tasks
+}
+
+// ✅ Handle Edit & Delete button clicks
+list.addEventListener("click", (e) => {
+  const li = e.target.closest("li"); // Find the clicked task's list item
+  const id = parseInt(li.getAttribute("data-id")); // Get task ID
+
+  if (e.target.classList.contains("editBtn")) {
+    // Edit button clicked
+    const text = li.querySelector("span").textContent;
+    input.value = text; // Fill input with old text
+    btn.textContent = "Update"; // Change button text
+    currentEditId = id; // Set edit mode
+    statusMsg.textContent = "Update the task below 👇";
+  } else if (e.target.classList.contains("delete-btn")) {
+    // Delete button clicked
+    li.classList.add("fade-out"); // Add animation class
+    setTimeout(() => deleteTask(id), 300); // Wait for fade then delete
   }
 });
 
-//Warning: I Used Chatgpt for comments genaration don't call me copy paste devlopar🙃
-
-// listens for checkbox being clicked (marking task complete/incomplete)
-applist.addEventListener("change", (e) => {
+// ✅ Handle checkbox change (complete/uncomplete task)
+list.addEventListener("change", (e) => {
   if (e.target.classList.contains("complete-checkbox")) {
-    const span = e.target.previousElementSibling; // grab the task text
-
-    // if checked → cross out and gray the text, else reset it
-    span.style.textDecoration = e.target.checked ? "line-through" : "none";
-    span.style.color = e.target.checked ? "#888" : "inherit";
-  }
-});
-
-// listens for delete button click inside the task list
-applist.addEventListener("click", (e) => {
-  // make sure click was on delete button or the trash icon inside it
-  if (
-    e.target.classList.contains("delete-btn") ||
-    e.target.closest(".delete-btn")
-  ) {
-    const confirmed = confirm("Are you sure you want to delete this task?"); // confirm delete
-
-    if (confirmed) {
-      const li = e.target.closest("li"); // grab the whole <li> to delete
-      li.classList.add("fade-out"); // trigger fade out animation (handled in CSS)
-
-      // wait a bit before actually removing it
-      setTimeout(() => li.remove(), 300);
-    }
+    const li = e.target.closest("li");
+    const id = parseInt(li.getAttribute("data-id"));
+    toggleComplete(id, e.target.checked); // Update completed status
   }
 });
