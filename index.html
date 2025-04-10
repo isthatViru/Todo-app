@@ -13,23 +13,54 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   </head>
   <body>
+    <audio id="completeSound" src="media/sound.wav" preload="auto"></audio>
+
     <!-- main container that holds everything -->
 
     <div class="main">
+      <button id="darkToggle">🌙 Toggle Dark Mode</button>
+
       <h1 class="Heading">To-Do List</h1>
       <!-- top section: input box + Add button -->
       <div class="c1">
         <p id="statusMsg"></p>
         <div class="input-row">
           <input type="text" id="input" placeholder="Enter Your Task" />
+          <select id="priority" class="priority-select">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+
           <button id="add">Add</button>
         </div>
       </div>
 
       <!-- bottom section: task list will be shown here -->
-      <div class="c2">
+      <div class="filters">
+        <div class="filter-group">
+          <label for="filterPriority">Priority:</label>
+          <select id="filterPriority">
+            <option value="all">All</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterStatus">Status:</label>
+          <select id="filterStatus">
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
+        </div>
+      </div>
+      
+      
         <ul id="list"></ul>
       </div>
     </div>

@@ -3,79 +3,106 @@ const inputtext = document.getElementById("input"); // Input field
 const btn = document.getElementById("add"); // Add/Update button
 const applist = document.getElementById("list"); // Task list container
 const statusMsg = document.getElementById("statusMsg"); // Message text
+const darkToggle = document.getElementById("darkToggle");
+const prioritySelect = document.getElementById("priority");
+const filterPriority = document.getElementById("filterPriority");
+const filterStatus = document.getElementById("filterStatus");
 
 let currentEditId = null; // Keeps track of the ID of the task being edited
 
+// Load dark mode setting from localStorage
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark-mode");
+}
+
+darkToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  const isDark = document.body.classList.contains("dark-mode");
+  localStorage.setItem("darkMode", isDark);
+});
+
 // ✅ Load all tasks from localStorage when the page loads
 window.onload = () => {
-  const savedTasks = JSON.parse(localStorage.getItem("tasks")) || []; // Get tasks or empty array
-  savedTasks.forEach(addTaskToUI); // Show each task on UI
+  refreshList();
 };
 
 // ✅ Handle Add or Update button click
 btn.addEventListener("click", () => {
-  const text = input.value.trim(); // Get input value and trim spaces
+  const priority = prioritySelect.value;
+  const text = inputtext.value.trim(); // Get input value and trim spaces
   if (!text) return; // Don't allow empty tasks
 
   if (currentEditId !== null) {
     // If editing existing task
-    updateTask(text);
+    updateTask(text, priority);
   } else {
     // If adding new task
     const task = {
-      id: Date.now(), // Generate unique ID using timestamp
+      id: Date.now(),
       text,
-      completed: false, // Default status
+      completed: false,
+      priority,
     };
-    saveTask(task); // Save to localStorage
-    addTaskToUI(task); // Add to screen
+    saveTask(task);
   }
 
+  playSound("completeSound"); // ✅ Play sound after add/update
+
   // Reset UI state
-  input.value = "";
+  inputtext.value = "";
+  prioritySelect.value = "medium";
   btn.textContent = "Add";
   statusMsg.textContent = "";
   currentEditId = null;
+  refreshList();
 });
 
 // ✅ Function to add a task to UI
 function addTaskToUI(task) {
   const li = document.createElement("li");
-  li.setAttribute("data-id", task.id); // Attach ID for future reference
+  li.setAttribute("data-id", task.id);
+  li.classList.add("fade-in");
+
   li.innerHTML = `
-    <input type="checkbox" ${
-      task.completed ? "checked" : ""
-    } class="complete-checkbox">
+    <label class="custom-checkbox">
+      <input type="checkbox" ${
+        task.completed ? "checked" : ""
+      } class="complete-checkbox" />
+      <span class="checkmark"></span>
+    </label>
     <span style="${
       task.completed ? "text-decoration:line-through; color:#888" : ""
     }">
-      ${task.text}
+      ${task.text} ${task.completed ? "🎉" : ""}
     </span>
+    <span class="priority-label ${task.priority}">${task.priority}</span>
     <button class="editBtn">Edit</button>
     <button class="delete-btn">Delete</button>
   `;
-  list.appendChild(li);
+  applist.appendChild(li);
 }
 
 // ✅ Save task to localStorage
 function saveTask(task) {
-  const tasks = JSON.parse(localStorage.getItem("tasks")) || []; // Get existing tasks
-  tasks.push(task); // Add new one
-  localStorage.setItem("tasks", JSON.stringify(tasks)); // Save back
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.push(task);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 // ✅ Update existing task in localStorage
-function updateTask(text) {
+function updateTask(text, priority) {
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks = tasks.map((t) => (t.id === currentEditId ? { ...t, text } : t)); // Replace matching task
+  tasks = tasks.map((t) =>
+    t.id === currentEditId ? { ...t, text, priority } : t
+  );
   localStorage.setItem("tasks", JSON.stringify(tasks));
-  refreshList(); // Redraw list
+  currentEditId = null;
 }
 
 // ✅ Delete a task by ID
 function deleteTask(id) {
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks = tasks.filter((t) => t.id !== id); // Keep all except the one with given id
+  tasks = tasks.filter((t) => t.id !== id);
   localStorage.setItem("tasks", JSON.stringify(tasks));
   refreshList();
 }
@@ -83,42 +110,82 @@ function deleteTask(id) {
 // ✅ Toggle task completion (checkbox)
 function toggleComplete(id, completed) {
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks = tasks.map((t) => (t.id === id ? { ...t, completed } : t)); // Update completed value
+  tasks = tasks.map((t) => (t.id === id ? { ...t, completed } : t));
   localStorage.setItem("tasks", JSON.stringify(tasks));
   refreshList();
+  if (completed) {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+  }
 }
 
 // ✅ Re-render all tasks (after update/delete/complete)
 function refreshList() {
-  list.innerHTML = ""; // Clear UI
-  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks.forEach(addTaskToUI); // Show all tasks
+  applist.innerHTML = "";
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+  const selectedPriority = filterPriority.value;
+  const selectedStatus = filterStatus.value;
+
+  const filtered = tasks.filter((task) => {
+    const priorityMatch =
+      selectedPriority === "all" || task.priority === selectedPriority;
+    const statusMatch =
+      selectedStatus === "all" ||
+      (selectedStatus === "completed" && task.completed) ||
+      (selectedStatus === "incomplete" && !task.completed);
+    return priorityMatch && statusMatch;
+  });
+
+  filtered.forEach(addTaskToUI);
 }
 
 // ✅ Handle Edit & Delete button clicks
-list.addEventListener("click", (e) => {
-  const li = e.target.closest("li"); // Find the clicked task's list item
-  const id = parseInt(li.getAttribute("data-id")); // Get task ID
+applist.addEventListener("click", (e) => {
+  const li = e.target.closest("li");
+  const id = parseInt(li.getAttribute("data-id"));
 
   if (e.target.classList.contains("editBtn")) {
-    // Edit button clicked
-    const text = li.querySelector("span").textContent;
-    input.value = text; // Fill input with old text
-    btn.textContent = "Update"; // Change button text
-    currentEditId = id; // Set edit mode
+    const text = li.querySelector("span").textContent.trim();
+    const priority = li.querySelector(".priority-label").textContent.trim();
+    inputtext.value = text;
+    prioritySelect.value = priority;
+    btn.textContent = "Update";
+    currentEditId = id;
     statusMsg.textContent = "Update the task below 👇";
   } else if (e.target.classList.contains("delete-btn")) {
-    // Delete button clicked
-    li.classList.add("fade-out"); // Add animation class
-    setTimeout(() => deleteTask(id), 300); // Wait for fade then delete
+    li.classList.add("fade-out");
+    setTimeout(() => deleteTask(id), 300);
   }
 });
 
 // ✅ Handle checkbox change (complete/uncomplete task)
-list.addEventListener("change", (e) => {
+applist.addEventListener("change", (e) => {
   if (e.target.classList.contains("complete-checkbox")) {
     const li = e.target.closest("li");
     const id = parseInt(li.getAttribute("data-id"));
-    toggleComplete(id, e.target.checked); // Update completed status
+    toggleComplete(id, e.target.checked);
   }
 });
+
+// ✅ Handle Enter Key on addBtn
+inputtext.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    btn.click();
+  }
+});
+
+function playSound(id) {
+  const sound = document.getElementById(id);
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play();
+  }
+}
+
+// ✅ Handle filter changes
+filterPriority.addEventListener("change", refreshList);
+filterStatus.addEventListener("change", refreshList);
