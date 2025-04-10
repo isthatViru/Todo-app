@@ -9,8 +9,9 @@ body {
   transition: background-color 0.4s, color 0.4s;
 }
 .main {
-  width: 600px;
-  height: auto;
+  max-width: 95%;
+  width: 100%;
+  margin: 2rem auto;
   display: flex;
   margin: 500px;
   margin-top: 10px;
@@ -383,4 +384,61 @@ li.fade-out {
   background: #444;
   color: #fff;
   border: 1px solid #666;
+}
+@media (max-width: 768px) {
+  .input-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  #darkToggle {
+    right: 20px;
+    top: 20px;
+  }
+
+  .c1 {
+    margin-top: 40px;
+    margin-left: 0;
+    align-items: stretch;
+  }
+
+  .c1 input,
+  .c1 button {
+    width: 100%;
+  }
+
+  .Heading {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .Heading {
+    font-size: 20px;
+  }
+
+  .priority-label {
+    font-size: 0.75rem;
+  }
+
+  .priority-select,
+  .filter-group select {
+    font-size: 13px;
+    padding: 4px 10px;
+  }
+
+  .filter-group label {
+    font-size: 13px;
+  }
 }
