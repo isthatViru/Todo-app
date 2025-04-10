@@ -7,6 +7,7 @@ const darkToggle = document.getElementById("darkToggle");
 const prioritySelect = document.getElementById("priority");
 const filterPriority = document.getElementById("filterPriority");
 const filterStatus = document.getElementById("filterStatus");
+const deleteSound = document.getElementById("deleteSound");
 
 let currentEditId = null; // Keeps track of the ID of the task being edited
 
@@ -102,6 +103,10 @@ function updateTask(text, priority) {
 // ✅ Delete a task by ID
 function deleteTask(id) {
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  deleteSound.play();
+  tasks.splice(i, 1);
+  saveTasks();
+  renderTasks();
   tasks = tasks.filter((t) => t.id !== id);
   localStorage.setItem("tasks", JSON.stringify(tasks));
   refreshList();
@@ -189,3 +194,23 @@ function playSound(id) {
 // ✅ Handle filter changes
 filterPriority.addEventListener("change", refreshList);
 filterStatus.addEventListener("change", refreshList);
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("JS Loaded");
+
+  const addBtn = document.getElementById("add");
+  const input = document.getElementById("input");
+  const list = document.getElementById("list");
+
+  addBtn.addEventListener("click", () => {
+    const task = input.value.trim();
+    if (!task) return;
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>${task}</span>
+      <button class="delete-btn">Delete</button>
+    `;
+    list.appendChild(li);
+    input.value = "";
+  });
+});

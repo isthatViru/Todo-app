@@ -3,56 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>To-Do List App</title>
+    <title>Document</title>
+
+    <!-- linking the CSS file where all styling is written -->
     <link rel="stylesheet" href="style.css" />
+
+    <!-- importing Font Awesome so we can use cool icons like the trash can -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   </head>
   <body>
-    <button id="darkToggle">🌙 Dark Mode</button>
-    <div class="container">
-      <div class="main-card">
-        <div class="Heading">To-Do List</div>
+    <audio id="completeSound" src="media/sound.wav" preload="auto"></audio>
+    <audio id="deleteSound" src="media/woosh(1).WAV" preload="auto"></audio>
 
-        <!-- Input Section -->
-        <div class="input-section">
-          <div class="input-row">
-            <input type="text" id="taskInput" placeholder="Enter your task" />
-            <select id="prioritySelect" class="priority-select">
-              <option value="low" class="low">Low</option>
-              <option value="medium" class="medium">Medium</option>
-              <option value="high" class="high">High</option>
-            </select>
-            <button id="addTaskBtn">Add</button>
-          </div>
-          <p id="statusMsg"></p>
+    <!-- main container that holds everything -->
+
+    <div class="main">
+      <button id="darkToggle">🌗</button>
+
+      <h1 class="Heading">📝 To-Do List</h1>
+      <!-- top section: input box + Add button -->
+      <div class="c1">
+        <p id="statusMsg"></p>
+        <div class="input-row">
+          <input type="text" id="input" placeholder="Enter Your Task" />
+          <select id="priority" class="priority-select">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+
+          <button id="add">Add</button>
         </div>
+      </div>
 
-        <!-- Filters -->
-        <div class="filters">
-          <div class="filter-group">
-            <label for="priorityFilter">Priority:</label>
-            <select id="priorityFilter">
-              <option value="all">All</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="completionFilter">Status:</label>
-            <select id="completionFilter">
-              <option value="all">All</option>
-              <option value="completed">Completed</option>
-              <option value="incomplete">Incomplete</option>
-            </select>
-          </div>
+      <!-- bottom section: task list will be shown here -->
+      <div class="filters">
+        <div class="filter-group">
+          <label for="filterPriority">Priority:</label>
+          <select id="filterPriority">
+            <option value="all">All</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
         </div>
-
-        <!-- Task List -->
+        <div class="filter-group">
+          <label for="filterStatus">Status:</label>
+          <select id="filterStatus">
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
+        </div>
+      </div>
+      
+      
         <ul id="list"></ul>
       </div>
     </div>
 
-    <!-- Link to your JavaScript -->
-    <script src="script.js"></script>
+    <!-- connecting the JavaScript file for all the logic -->
+    <script src="index.js"></script>
   </body>
 </html>
