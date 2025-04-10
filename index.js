@@ -103,13 +103,25 @@ function updateTask(text, priority) {
 // ✅ Delete a task by ID
 function deleteTask(id) {
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  deleteSound.play();
-  tasks.splice(i, 1);
-  saveTasks();
-  renderTasks();
-  tasks = tasks.filter((t) => t.id !== id);
+  // Reset and play the sound every time
+  deleteSound.pause(); // stop if it’s still playing
+  deleteSound.currentTime = 0; // rewind
+  deleteSound.play(); // play again
+
+  const li = document.querySelector(`li[data-id="${id}"]`);
+  li.classList.add("fade-out");
+  li.classList.add("swish-out");
+
+  setTimeout(() => {
+    tasks = tasks.filter((t) => t.id !== id); // Remove task from array
+    saveTasks(tasks); // Save updated tasks to localStorage
+    refreshList(); // Re-render the updated task list
+  }, 400); // match fade-out time
+}
+
+// ✅ Save updated tasks to localStorage
+function saveTasks(tasks) {
   localStorage.setItem("tasks", JSON.stringify(tasks));
-  refreshList();
 }
 
 // ✅ Toggle task completion (checkbox)
