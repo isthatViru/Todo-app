@@ -168,7 +168,7 @@ body.dark-mode {
 #darkToggle {
   position: absolute;
   top: 20px;
-  right: -400px;
+  right: -300px;
   padding: 8px 12px;
   border-radius: 10px;
   color: black;
